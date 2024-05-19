@@ -10,25 +10,26 @@ sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML");
 //----------Описание базового класса Точка------------------
 //----------------------------------------------------------
 
-class tpoint
+//Переписываю базовый класс point в абстрактный класс grobject
+
+class grobject
 {
     protected:
         int x, y, color, visible;
+        grobject();
+        grobject(int xx,int yy);
+        grobject(int xx, int yy, int c);
+        ~grobject(); 
     
     public:
-        tpoint();
-        tpoint(int xx,int yy);
-        tpoint(int xx, int yy, int c);
-        ~tpoint(); 
-
-        void draw(); 
+        virtual void draw() = 0; //чисто виртуальный метод draw - поэтому класс grobject абстрактный
         void hide();
         void reveal();
         void move(int dxx, int dyy);
 };
 
 //Конструктор по умолчанию
-tpoint::tpoint()
+grobject::grobject()
 {
     x  = 500;
     y = 500;
@@ -37,14 +38,14 @@ tpoint::tpoint()
 }
 
 //Конструктор с заданными x, y
-tpoint::tpoint(int xx,int yy)
+grobject::grobject(int xx,int yy)
 {
     x  = xx;
     y = yy; 
 }
 
 //Конструктор с заданными x, y, color
-tpoint::tpoint(int xx,int yy, int c)
+grobject::grobject(int xx,int yy, int c)
 {
     x  = xx;
     y = yy;
@@ -53,74 +54,27 @@ tpoint::tpoint(int xx,int yy, int c)
 }
 
 // Деструктор - просто закрашивает точку чёрным
-tpoint::~tpoint()
+grobject::~grobject()
 {
     x = 0;
     y = 0;
     color = 5;
 }
 
-// Функция вывода на экран 1-Красный, 2-Зелёный, 3-Синий, 4-Жёлтый, 5- Чёрный, Ост - белый.
-void tpoint::draw()
-{
-    if (visible == 1)
-    {
-        switch(color)
-        {
-            case 1:
-            {
-                sf::Vertex point(sf::Vector2f(x,y), sf::Color::Red);
-                window.draw(&point, 5, sf::Points);
-                break;
-            }
-            case 2:
-            {
-                sf::Vertex point(sf::Vector2f(x,y), sf::Color::Green);
-                window.draw(&point, 5, sf::Points);
-                break;
-            }
-            case 3:
-            {
-                sf::Vertex point(sf::Vector2f(x,y), sf::Color::Blue);
-                window.draw(&point, 5, sf::Points);
-                break;
-            }
-            case 4:
-            {
-                sf::Vertex point(sf::Vector2f(x,y), sf::Color::Yellow);
-                window.draw(&point, 5, sf::Points);
-                break;
-            }
-            case 5:
-            {
-                sf::Vertex point(sf::Vector2f(x,y), sf::Color::Black);
-                window.draw(&point, 5, sf::Points);
-                break;
-            }
-            default:
-            {
-                sf::Vertex point(sf::Vector2f(x,y), sf::Color::White);
-                window.draw(&point, 5, sf::Points);
-                break;
-            }
-        }
-    }
-}
-
 // Функция спрятать - выключает видимость
-void tpoint::hide()
+void grobject::hide()
 {
     visible = 0;
 }
 
 //Функция проявить - включает видимость
-void tpoint::reveal()
+void grobject::reveal()
 {
     visible = 1;
 }
 
 // Функция Переместить - меняет коорд x,y.
-void tpoint::move(int dxx, int dyy)
+void grobject::move(int dxx, int dyy)
 {
     x+=dxx;
     y+=dyy;
@@ -132,7 +86,7 @@ void tpoint::move(int dxx, int dyy)
 //-----Описание производного (от точки) класса Линия--------
 //----------------------------------------------------------
 
-class tline: public tpoint
+class tline: public grobject
 {
     protected:
         int dx, dy;
@@ -143,11 +97,11 @@ class tline: public tpoint
         tline(int xx, int yy, int dxx, int dyy, int c);
         ~tline();
 
-        void draw();
+        virtual void draw();
         void rotate(double fi);
 };
 
-//Конструктор по умолчанию - красная линия в 400 пикс. посередине (горизонт)
+//Конструктор по умолчанию 
 tline::tline()
 {
     x = 300;
@@ -272,7 +226,7 @@ class tsquare: public tline
         tsquare(int xx, int yy, int dxx, int dyy, int c);
         ~tsquare();
 
-        void draw();
+        virtual void draw();
 };
 
 //move и hide - не переопределяется, наследуются у class tline (которые насл. у point).
@@ -552,7 +506,7 @@ class tromb: virtual public tsquare
         tromb(int xx, int yy, int dxx, int dyy, int fik, int c);
         ~tromb();
 
-        void draw();
+        virtual void draw();
 };
 
 tromb::tromb()
@@ -701,7 +655,7 @@ class tpar: public tromb, public trekt
         tpar(int xx, int yy, int dxx, int dyy, float akk, float bkk, int fik, int c);
         ~tpar();
 
-        void draw();
+        virtual void draw();
 };
 
 tpar::tpar()
@@ -843,13 +797,8 @@ void tpar::draw()
 
 int main()
 {
-    tpoint a1(200,300,1); 
-    tpoint a2(700,300,2);
-    tpoint a3(300,700,3);
-    tpoint a4(700,700,4);
-    a1.move(0,-200);
-    a3.hide();
     
+ 
     tline l1(300,500,200,0,3);
     tline l2(300,400,200,200,2);
     tline l3 = tline();
@@ -900,6 +849,12 @@ int main()
     p3.move(100,0);
     p3.rotate(-3);
 
+    //Описание примера, демонстрирующего позднее связывание
+    tsquare *fig1;
+    fig1 = new tromb();
+
+    
+
 
     while (window.isOpen())
     {
@@ -937,6 +892,13 @@ int main()
         p1.draw();
         p2.draw();
         p3.draw();
+
+        //Отрисовка примера демонстр. позднее связывание
+        fig1->draw();
+
+        //На рисунке отрисовывается третий ромб, значит, несмотря на то, что fig1 - указатель на экземмпляр
+        //класса квадрат, на этапе позднего связывания программа понимает, что в динамической памяти находятся
+        //данные ромба и применяет соответствующий draw - из производного класса ромба
 
         window.display();
     }
