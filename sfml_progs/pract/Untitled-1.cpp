@@ -840,7 +840,7 @@ int main()
     rm1.hide();
     rm2.move(-260,-50);
     rm2.rotate(-48);
-
+    
     tpar p1 = tpar();
     tpar p2(200,100,200,100,3,1,60);
     tpar p3(700,100,100,200,1,2,150,4);
